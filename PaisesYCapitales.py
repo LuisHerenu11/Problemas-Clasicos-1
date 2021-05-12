@@ -41,33 +41,38 @@ class Productor(threading.Thread):
         self.lista = lista
         self.lock = threading.Lock()
         self.listaPaises = [ ("España","Madrid"), ("Francia","Paris"),("Italia","Roma"),("Inglaterra","Londres"),("Alemania","Berlin"),("Rusia","Moscu"),("Turquia","Istambul"),("China","Pekin"), ("Japon","Tokio"),("Emiratos Arabes","Dubai"),("Argentina","Buenos Aires"),("Brasil","Brasilia"),("Colombia","Bogota"),("Uruguay","Montevideo")]
-
+    
+    
     def run(self):
         while True:
-            if not self.lista.full():
-                self.lock.acquire()
+            self.lock.acquire()
             try:
-                if self.lock.locked(): 
-                    self.lista.append(self.listaPaises[random.randint(0,len(self.listaPaises)-1)])
-                    logging.info(f'La capital de: {self.lista[-1][0]} es: {self.lista[-1][1]}')
-                    time.sleep(random.randint(1,5))
+                while self.lista.full():
+                    pass
+                self.lista.append(self.listaPaises[random.randint(0,len(self.listaPaises)-1)])
+                logging.info(f'La capital de: {self.lista[-1][0]} es: {self.lista[-1][1]}')
+                time.sleep(random.randint(1,5))
             finally:
-                if self.lock.locked():
-                    self.lock.release()
-
-
+                self.lock.release()       
 
 class Consumidor(threading.Thread):
     def __init__(self, lista):
         super().__init__()
         self.lista = lista
-
+        self.lock = threading.Lock()
 
     def run(self):
         while True:
-            elemento = self.lista.pop(0)
-            logging.info(f'consumio la capital de: {elemento[0]} es: {elemento[1]}')
-            time.sleep(random.randint(1,5))
+            self.lock.acquire()
+            try:
+                while len(self.lista) == 0:
+                    pass
+                elemento = self.lista.pop(0)
+                logging.info(f'La capital de {elemento[0]} es {elemento[1]}')
+                time.sleep(random.randint(1,5))
+            finally:
+                self.lock.release()
+
 
 def main():
     lista = listaFinita(14)
