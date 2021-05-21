@@ -77,27 +77,27 @@ class RWLock(object):
 
     def __init__(self):
 
-        self.w_lock = Lock()
-        self.num_r_lock = Lock()
-        self.num_r = 0
+        self.w_lock = Lock() # write lock
+        self.num_r_lock = Lock() # read lock
+        self.num_r = 0 # contador locks 
 
     # ___________________________________________________________________
     # Metodos de Lectura (Reading).
 
     def r_acquire(self):
-        self.num_r_lock.acquire()
+        self.num_r_lock.acquire() # acá un lector, les dice a otros lectores que esta leyendo.
         self.num_r += 1
         if self.num_r == 1:
-            self.w_lock.acquire()
-        self.num_r_lock.release()
+            self.w_lock.acquire() # acá si alguien esta leyendo, impide que el escritor escriba.
+        self.num_r_lock.release() # libera el lock de lectura.
 
     def r_release(self):
-        assert self.num_r > 0
-        self.num_r_lock.acquire()
-        self.num_r -= 1
+        assert self.num_r > 0 # si hay un lock de lectura bloqueado hacer tal.
+        self.num_r_lock.acquire() # adquiere lock de lectura.
+        self.num_r -= 1 #
         if self.num_r == 0:
-            self.w_lock.release()
-        self.num_r_lock.release()
+            self.w_lock.release() # libera el write lock adquirido por otro hilo. VER LINEA 91.
+        self.num_r_lock.release() # libera el lock de lectura adquirido en el mismo hilo.
 
 
     # ___________________________________________________________________
